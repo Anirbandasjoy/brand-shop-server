@@ -62,6 +62,18 @@ async function run() {
       }
     });
 
+    // get product
+    app.get("/product/:category", async (req, res) => {
+      try {
+        const category = req.params.category;
+        const filter = { category: category };
+        const products = await productCollection.find(filter).toArray();
+        res.status(200).send(products);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
