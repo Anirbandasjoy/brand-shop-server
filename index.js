@@ -27,6 +27,7 @@ async function run() {
     await client.connect();
 
     const categoryCollection = client.db("categoryDB").collection("category");
+    const productCollection = client.db("categoryDB").collection("product");
 
     // create category
 
@@ -40,11 +41,22 @@ async function run() {
       }
     });
     // get category
-
     app.get("/category", async (req, res) => {
       try {
         const categorys = await categoryCollection.find().toArray();
         res.status(200).send(categorys);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+
+    // create product
+
+    app.post("/product", async (req, res) => {
+      try {
+        const product = req.body;
+        const newProduct = await productCollection.insertOne(product);
+        res.status(201).send(newProduct);
       } catch (error) {
         res.status(500).send("Server Internal Error");
       }
