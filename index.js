@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
   res.send("My-Server Side");
 });
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = process.env.dbURL;
 
 const client = new MongoClient(uri, {
@@ -63,12 +63,42 @@ async function run() {
     });
 
     // get product
-    app.get("/product/:category", async (req, res) => {
+    app.get("/product/:brand", async (req, res) => {
       try {
-        const category = req.params.category;
-        const filter = { category: category };
+        const brand = req.params.brand;
+        const filter = { brand: brand };
         const products = await productCollection.find(filter).toArray();
         res.status(200).send(products);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+
+    // update product
+
+    app.put("/product/:id", async (req, res) => {
+      try {
+        const { name, price, image, description, brand, rating } = req.body;
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateProduct = {
+          $set: {
+            name,
+            price,
+            image,
+            description,
+            brand,
+            rating,
+          },
+        };
+        const updatedProduct = await productCollection.updateOne(
+          filter,
+          updateProduct,
+          options
+        );
+
+        res.status(200).send(updatedProduct);
       } catch (error) {
         res.status(500).send("Server Internal Error");
       }
