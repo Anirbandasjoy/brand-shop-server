@@ -28,6 +28,7 @@ async function run() {
 
     const categoryCollection = client.db("categoryDB").collection("category");
     const productCollection = client.db("categoryDB").collection("product");
+    const orderCollection = client.db("categoryDB").collection("order");
 
     // create category
 
@@ -78,7 +79,8 @@ async function run() {
 
     app.put("/product/:id", async (req, res) => {
       try {
-        const { name, price, image, description, brand, rating } = req.body;
+        const { name, price, image, description, brand, rating, category } =
+          req.body;
         const id = req.params.id;
         const filter = { _id: new ObjectId(id) };
         const options = { upsert: true };
@@ -90,6 +92,7 @@ async function run() {
             description,
             brand,
             rating,
+            category,
           },
         };
         const updatedProduct = await productCollection.updateOne(
@@ -99,6 +102,18 @@ async function run() {
         );
 
         res.status(200).send(updatedProduct);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+
+    // create order
+
+    app.post("/order", async (req, res) => {
+      try {
+        const product = req.body;
+        const order = await orderCollection.insertOne(product);
+        res.status(201).send(order);
       } catch (error) {
         res.status(500).send("Server Internal Error");
       }
