@@ -119,6 +119,48 @@ async function run() {
       }
     });
 
+    // get order
+
+    app.get("/order", async (req, res) => {
+      try {
+        const orders = await orderCollection.find().toArray();
+        res.status(200).send(orders);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+    // update order
+
+    app.put("/order/:id", async (req, res) => {
+      try {
+        const { name, price, image, description, brand, rating, category } =
+          req.body;
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const options = { upsert: true };
+        const updateOrderd = {
+          $set: {
+            name,
+            price,
+            image,
+            description,
+            brand,
+            rating,
+            category,
+          },
+        };
+        const updatedOrder = await orderCollection.updateOne(
+          filter,
+          updateOrderd,
+          options
+        );
+
+        res.status(200).send(updatedOrder);
+      } catch (error) {
+        res.status(500).send("Server Internal Error");
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
