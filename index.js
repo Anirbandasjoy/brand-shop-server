@@ -25,13 +25,10 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-
     const categoryCollection = client.db("categoryDB").collection("category");
     const productCollection = client.db("categoryDB").collection("product");
     const orderCollection = client.db("categoryDB").collection("order");
-
     // create category
-
     app.post("/category", async (req, res) => {
       try {
         const category = req.body;
@@ -39,6 +36,15 @@ async function run() {
         res.status(201).send(newCategory);
       } catch (error) {
         res.status(500).send("Server Internal Error");
+      }
+    });
+
+    app.get("/product", async (req, res) => {
+      try {
+        const products = await productCollection.find().toArray();
+        res.status(200).send(products);
+      } catch (error) {
+        console.log(error);
       }
     });
     // get category
@@ -106,20 +112,17 @@ async function run() {
         res.status(500).send("Server Internal Error");
       }
     });
-
     // create order
 
     app.post("/order", async (req, res) => {
       try {
-        const product = req.body;
-        const order = await orderCollection.insertOne(product);
-        res.status(201).send(order);
+        const order = req.body;
+        const newOrder = await orderCollection.insertOne(order);
+        res.status(201).send(newOrder);
       } catch (error) {
         res.status(500).send("Server Internal Error");
       }
     });
-
-    // get order
 
     app.get("/order", async (req, res) => {
       try {
@@ -129,35 +132,15 @@ async function run() {
         res.status(500).send("Server Internal Error");
       }
     });
-    // update order
 
-    app.put("/order/:id", async (req, res) => {
+    app.delete("/order/:id", async (req, res) => {
       try {
-        const { name, price, image, description, brand, rating, category } =
-          req.body;
         const id = req.params.id;
         const filter = { _id: new ObjectId(id) };
-        const options = { upsert: true };
-        const updateOrderd = {
-          $set: {
-            name,
-            price,
-            image,
-            description,
-            brand,
-            rating,
-            category,
-          },
-        };
-        const updatedOrder = await orderCollection.updateOne(
-          filter,
-          updateOrderd,
-          options
-        );
-
-        res.status(200).send(updatedOrder);
+        const deletedOrder = await orderCollection.deleteOne(filter);
+        res.status(200).send(deletedOrder);
       } catch (error) {
-        res.status(500).send("Server Internal Error");
+        console.log(error.message);
       }
     });
 
